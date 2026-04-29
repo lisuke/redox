@@ -4,7 +4,7 @@ IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
 IMG_DIR?=build/img/$(ARCH)
 OS_TEST_DIR?=build/os-test/$(ARCH)
-CI_COOKBOOK_CONFIG?=CI=1 COOKBOOK_LOGS=true COOKBOOK_CLEAN_BUILD=true COOKBOOK_VERBOSE=false COOKBOOK_COMPRESSED=true
+CI_COOKBOOK_CONFIG?=CI=1 COOKBOOK_LOGS=true COOKBOOK_CLEAN_BUILD=true COOKBOOK_VERBOSE=false COOKBOOK_COMPRESSED=true COOKBOOK_WEB=true
 
 # CI image target - build standard images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
