@@ -48,5 +48,5 @@ ARGS=(
     "--dhcp-boot=tag:ipxe,redox.ipxe"
 )
 
-sudo dnsmasq "${ARGS[@]}"&
-python3 -m http.server -b "${NETWORK}.1" -d "${BUILD}" "8080"
+python3 -m http.server -b "${NETWORK}.1" -d "${BUILD}" "8080"&
+sudo dnsmasq "${ARGS[@]}"
