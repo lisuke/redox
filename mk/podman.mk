@@ -3,9 +3,6 @@
 # Configuration variables for running make in Podman
 ## Tag the podman image $IMAGE_TAG
 IMAGE_TAG?=redox-base
-ifneq ($(HOST_ARCH),x86_64)
-	IMAGE_TAG?=redox-base-$(HOST_ARCH)
-endif
 ## Working Directory in Podman
 CONTAINER_WORKDIR?=/mnt/redox
 
@@ -19,7 +16,7 @@ endif
 
 # Cache layers to redox-os docker hub
 PODMAN_CACHE=
-PODMAN_CACHE_PATH=docker.io/redoxos/$(IMAGE_TAG)
+PODMAN_CACHE_PATH=docker.io/redoxos/$(IMAGE_TAG)/$(HOST_ARCH)
 
 PODMAN_CACHE_PULL?=1
 ifeq ($(PODMAN_CACHE_PULL),1)
