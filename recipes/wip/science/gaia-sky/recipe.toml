@@ -4,9 +4,8 @@ tar = "https://gaia.ari.uni-heidelberg.de/gaiasky/releases/latest/gaiasky-3.6.4-
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/usr/share/gaia-sky
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/gaia-sky
-echo "#!/usr/bin/env bash \n /usr/share/gaia-sky" > "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/gaia-sky-dir
+echo "gaia-sky-dir/gaia-sky" > "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
 chmod a+x "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
 """

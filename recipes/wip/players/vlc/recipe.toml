@@ -2,7 +2,7 @@
 #TODO determine minimum dependencies
 # customization: https://wiki.videolan.org/Configure/
 [source]
-tar = "https://get.videolan.org/vlc/3.0.21/vlc-3.0.21.tar.xz"
+tar = "https://get.videolan.org/vlc/3.0.22/vlc-3.0.22.tar.xz"
 [build]
 template = "configure"
 dependencies = [
@@ -15,7 +15,7 @@ dependencies = [
     # "liba52",
     # "libmpeg2",
     # "lame",
-    "ffmpeg6",
+    #"ffmpeg6",
     # "libmad",
     # "libdca",
     # "twolame",
@@ -33,16 +33,16 @@ dependencies = [
     # "libgpg-error",
     # "libgcrypt",
     # "gnutls",
-    "libxml2",
+    #"libxml2",
     # "libvncserver",
     # "libpng",
     # "libjpeg",
     # "libiconv",
     # "gettext",
-    "zlib",
-    "freetype2",
+    #"zlib",
+    #"freetype2",
     # "fribidi",
-    "fontconfig",
+    #"fontconfig",
     # "taglib",
-    "wxwidgets-gtk3",
+    #"wxwidgets-gtk3",
 ]

@@ -1,5 +1,5 @@
 #TODO not compiled or tested
-#TODO determine minimum dependencies
+#TODO missing dependencies
 # build instructions: https://github.com/mpv-player/mpv#compilation
 [source]
 git = "https://github.com/mpv-player/mpv"
@@ -8,7 +8,7 @@ shallow_clone = true
 [build]
 template = "meson"
 mesonflags = [
-    "-Dsdl2-video=enabled",
+    "-Dcplayer=false",
     "-Dx11=disabled",
     "-Dwayland=disabled",
     "-Dmanpage-build=disabled",
@@ -16,9 +16,9 @@ mesonflags = [
 dependencies = [
     "ffmpeg6",
     "libass",
-    "libjpeg",
-    "libiconv",
-    "zlib",
+    #"libjpeg",
+    #"libiconv",
+    #"zlib",
     #"mesa",
     "sdl2",
 ]

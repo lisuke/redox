@@ -2,9 +2,14 @@
 # build instructions: https://docs.openspaceproject.com/en/latest/dev/compiling/index.html#
 [source]
 git = "https://github.com/OpenSpace/OpenSpace"
-rev = "b3681167a3b95d49ac7aa7d06b07cbd88c687e9a"
+branch = "releases/v0.21.4"
+shallow_clone = true
 [build]
 template = "cmake"
+cmakeflags = [
+    "-DOPENSPACE_RELEASE_BUILD=ON",
+    "-DOPENSPACE_HAVE_TESTS=OFF",
+]
 dependencies = [
     "qt6-base",
     "libgdal",

@@ -1,8 +1,8 @@
 #TODO not compiled or tested
-# build instructions: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#building
 #TODO missing dependencies: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#qt6
+# build instructions: https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#building
 [source]
-tar = "https://github.com/Stellarium/stellarium/releases/download/v25.3/stellarium-25.3.tar.xz"
+tar = "https://github.com/Stellarium/stellarium/releases/download/v26.1/stellarium-26.1.tar.xz"
 [build]
 template = "cmake"
 dependencies = [
