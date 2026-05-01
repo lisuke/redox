@@ -14,6 +14,17 @@ LLVM_TARGET=recipes/dev/llvm21/target/$(HOST_TARGET)/$(TARGET)
 RUST_TARGET=recipes/dev/rust/target/$(HOST_TARGET)/$(TARGET)
 CLANG_TARGET=recipes/dev/clang21/target/$(HOST_TARGET)/$(TARGET)
 LLD_TARGET=recipes/dev/lld21/target/$(HOST_TARGET)/$(TARGET)
+# dependencies of GCC and Rust
+LIBGMP_TARGET=recipes/libs/libgmp/target/$(HOST_TARGET)/$(TARGET)
+LIBMPFR_TARGET=recipes/libs/libmpfr/target/$(HOST_TARGET)/$(TARGET)
+LIBMPC_TARGET=recipes/libs/mpc/target/$(HOST_TARGET)/$(TARGET)
+LIBZLIB_TARGET=recipes/libs/zlib/target/$(HOST_TARGET)/$(TARGET)
+LIBZSTD_TARGET=recipes/libs/zstd/target/$(HOST_TARGET)/$(TARGET)
+LIBSSL_TARGET=recipes/libs/openssl3/target/$(HOST_TARGET)/$(TARGET)
+LIBHTTP2_TARGET=recipes/libs/nghttp2/target/$(HOST_TARGET)/$(TARGET)
+LIBCURL_TARGET=recipes/net/download/curl/target/$(HOST_TARGET)/$(TARGET)
+LIBGCC_TARGET=recipes/libs/libgcc/target/$(TARGET)
+LIBCPP_TARGET=recipes/libs/libstdcxx/target/$(TARGET)
 
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
@@ -28,13 +39,19 @@ prefix: $(PREFIX)/sysroot
 # Remove prefix builds and downloads
 prefix_clean:
 	rm -rf $(PREFIX)
+ifeq ($(PREFIX_BINARY),0)
+	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
+	rm -rf $(RELIBC_TARGET) $(LLVM_TARGET) $(RUST_TARGET) $(CLANG_TARGET) $(LLD_TARGET) $(LIBGMP_TARGET) $(LIBMPFR_TARGET)
+	rm -rf $(LIBMPC_TARGET) $(LIBZLIB_TARGET) $(LIBZSTD_TARGET) $(LIBSSL_TARGET) $(LIBHTTP2_TARGET) $(LIBCURL_TARGET)
+	rm -rf $(LIBGCC_TARGET) $(LIBCPP_TARGET)
+endif
 
 # Remove relibc in sysroot and all statically linked recipes
 static_clean: | $(FSTOOLS_TAG)
 	$(MAKE) c.relibc
 	$(MAKE) c.base,extrautils,kernel,redoxfs
-	$(MAKE) c.bash,luajit,gettext,openssl1,openssl3,pcre2,sdl1,zstd,zlib,bzip2,xz
-	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw
+	$(MAKE) c.bash,luajit,gettext,libgcc,libstdcxx,openssl1,openssl3,pcre2,sdl1,zstd,zlib,bzip2,xz
+	$(MAKE) c.expat,freetype2,libffi,libiconv,libjpeg,liborbital,libpng,libxml2,ncurses,ncursesw,termcap
 	rm -rf $(REPO_TAG)
 
 $(PREFIX)/sysroot: $(PREFIX)/clang-install $(PREFIX)/rust-install $(PREFIX)/gcc-install | $(FSTOOLS_TAG) $(CONTAINER_TAG)
