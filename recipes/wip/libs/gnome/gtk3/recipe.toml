@@ -48,5 +48,7 @@ script = """
 DYNAMIC_INIT
 CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
 cookbook_meson \
-    -Dintrospection=false
+    -Dexamples=false \
+    -Dintrospection=false \
+    -Dtests=false
 """
