@@ -23,6 +23,8 @@ LIBZSTD_TARGET=recipes/libs/zstd/target/$(HOST_TARGET)/$(TARGET)
 LIBSSL_TARGET=recipes/libs/openssl3/target/$(HOST_TARGET)/$(TARGET)
 LIBHTTP2_TARGET=recipes/libs/nghttp2/target/$(HOST_TARGET)/$(TARGET)
 LIBCURL_TARGET=recipes/net/download/curl/target/$(HOST_TARGET)/$(TARGET)
+LIBGCC_TARGET=recipes/libs/libgcc/target/$(TARGET)
+LIBCPP_TARGET=recipes/libs/libstdcxx/target/$(TARGET)
 
 # official RISC-V support introduced in newer version
 UPSTREAM_RUSTC_VERSION=2025-11-15
@@ -41,6 +43,7 @@ ifeq ($(PREFIX_BINARY),0)
 	rm -rf $(BINUTILS_TARGET) $(LIBTOOL_TARGET) $(GCC_TARGET) $(LIBSTDCXX_TARGET) $(RELIBC_FREESTANDING_TARGET)
 	rm -rf $(RELIBC_TARGET) $(LLVM_TARGET) $(RUST_TARGET) $(CLANG_TARGET) $(LLD_TARGET) $(LIBGMP_TARGET) $(LIBMPFR_TARGET)
 	rm -rf $(LIBMPC_TARGET) $(LIBZLIB_TARGET) $(LIBZSTD_TARGET) $(LIBSSL_TARGET) $(LIBHTTP2_TARGET) $(LIBCURL_TARGET)
+	rm -rf $(LIBGCC_TARGET) $(LIBCPP_TARGET)
 endif
 
 # Remove relibc in sysroot and all statically linked recipes
