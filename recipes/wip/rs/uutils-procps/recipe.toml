@@ -1,6 +1,22 @@
-#TODO not compiled or tested
+#TODO: common libc functions such as getsid
+#TODO: only watch is working
 [source]
 git = "https://github.com/uutils/procps"
 shallow_clone = true
 [build]
-template = "cargo"
+template = "custom"
+script = """
+DYNAMIC_INIT
+# TODO: more features support?
+CARGO_PROFILE_RELEASE_LTO=thin cookbook_cargo --no-default-features --features pmap,slabtop,sysctl,tload,vmstat,watch
+
+BINS=(
+    watch
+)
+
+for bin in "${BINS[@]}"
+do
+  ln -sv procps "${COOKBOOK_STAGE}/usr/bin/$bin"
+done
+"""
+
