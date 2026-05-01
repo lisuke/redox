@@ -210,6 +210,7 @@ tokei = {}
 ttf-hack = {}
 userutils = {}
 uutils = {}
+uutils-procps = {}
 vim = {}
 vttest = {}
 wayland-rs = {}
