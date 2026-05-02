@@ -38,7 +38,7 @@ else
 endif
 
 # Fetch all recipes source or binary from filesystem config
-fetch: $(FSTOOLS_TAG) FORCE
+fetch: prefix $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -82,7 +82,7 @@ else
 endif
 
 # Invoke fetch for one or more targets separated by comma
-f.%: $(FSTOOLS_TAG) FORCE
+f.%: prefix $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
