@@ -215,9 +215,12 @@ ubuntu()
     if [ "$1" == "qemu" ]; then
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
-            sudo "$2" install qemu-system-x86 qemu-kvm
-            sudo "$2" install qemu-system-arm qemu-efi-aarch64
-            sudo "$2" install qemu-system-riscv
+            if apt-cache show qemu-system-riscv > /dev/null 2>&1
+            then riscv="qemu-system-riscv" # ubuntu 26 / debian 13
+            else riscv="qemu-system-riscv64" # ubuntu 24 / debian 12
+            fi
+            sudo $install_command qemu-system-x86 qemu-kvm \
+                qemu-system-arm qemu-efi-aarch64 $riscv
         else
             echo "QEMU already installed!"
         fi
