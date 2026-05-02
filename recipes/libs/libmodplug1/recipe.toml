@@ -9,5 +9,7 @@ autotools_recursive_regenerate
 template = "custom"
 script = """
 DYNAMIC_INIT
+# For strings.h from string.h
+export CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 cookbook_configure
 """
