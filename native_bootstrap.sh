@@ -1144,12 +1144,12 @@ else
     # SUSE and derivatives
     elif hash 2>/dev/null zypper; then
         suse "$emulator"
-    # Debian or any derivative of it
-    elif hash 2>/dev/null apt-get; then
-        ubuntu "$emulator" "$noninteractive" "$defpackman"
     # Fedora
     elif hash 2>/dev/null dnf; then
         fedora "$emulator" "$noninteractive"
+    # Debian or any derivative of it
+    elif hash 2>/dev/null apt-get; then
+        ubuntu "$emulator" "$noninteractive" "$defpackman"
     # Gentoo
     elif hash 2>/dev/null emerge; then
         gentoo "$emulator"
