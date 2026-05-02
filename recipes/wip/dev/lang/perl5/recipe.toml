@@ -12,7 +12,6 @@ GNU_CONFIG_GET ./cnf/config.sub
 """
 [build]
 template = "custom"
-dev-dependencies = ["relibc"]
 script = """
 DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
@@ -21,21 +20,11 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cp ${COOKBOOK_RECIPE}/configure_tool.sh ${COOKBOOK_BUILD}/cnf/configure_tool.sh
 cp ${COOKBOOK_RECIPE}/redox ${COOKBOOK_BUILD}/cnf/hints/redox
 #Note: non-standard configure, familiar flags can have different meaning!
-./configure --host-cc="gcc" --host-cpp="g++" --target=${TARGET} --sysroot=${COOKBOOK_SYSROOT}
+./configure --host-cc="gcc" --host-cpp="g++" --target=${TARGET} --sysroot="${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}"
 sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h
 sed -i "s/^# HAS_NANOSLEEP.*/#define HAS_NANOSLEEP/" config.h
 sed -i "s|^/.#define I_GRP.*|#define I_GRP|" config.h
 echo "#define HAS_GROUP" >> config.h
-make -j4
-make install DESTDIR="${COOKBOOK_STAGE}"
-pushd .
-cd "${COOKBOOK_STAGE}/usr/share/man/man3"
-for f in *; do
-case "$f" in
-*::*)
-mv "$f" "${f//::/__}";
-;;
-esac
-done
-popd
+make -j${COOKBOOK_MAKE_JOBS} 
+make install.perl DESTDIR="${COOKBOOK_STAGE}"
 """
