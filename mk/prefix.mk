@@ -392,14 +392,14 @@ endif
 # BUILD RUST ---------------------------------------------------
 else
 
-$(PREFIX)/rust-install: | $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(PREFIX)/rust-install: | $(PREFIX)/gcc-install $(PREFIX)/libtool-install $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	@echo "\033[1;36;49mBuilding rust-install\033[0m"
 	rm -rf "$@.partial" "$@"
-	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$$PATH" \
-		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) && \
+	export PATH="$(ROOT)/$(PREFIX)/libtool-install/bin:$(ROOT)/$(PREFIX)/gcc-install/bin:$$PATH" \
+		$(PREFIX_CONFIG) COOKBOOK_HOST_SYSROOT=/usr COOKBOOK_CROSS_TARGET=$(TARGET) COOKBOOK_CROSS_GNU_TARGET=$(GNU_TARGET) && \
 		$(REPO_BIN) cook host:llvm21 host:rust
 	cp -r "$(RUST_TARGET)/stage/usr/". "$@.partial"
 	cp -r "$(LLVM_TARGET)/stage/usr/". "$@.partial"
