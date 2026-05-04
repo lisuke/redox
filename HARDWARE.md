@@ -115,6 +115,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | Asrock (Custom) | X570 Phantom Gaming 4 (Ryzen 3600) | 2026-05-02 | desktop | x86-64 | UEFI | Not recognised as a UEFI boot disk, have to boot in CSM mode. Bootloader fails with a panic |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
+| Dell | XPS L502X | 0.9.0 | 2026-04-16 | desktop | x86-64 | BIOS | Does not find the bootloader without patching the partition type byte to FAT32 (LBA), after the live kernel loads, the kernel panics and dumps an unreadable long trace, referencing an invalid opcode CPU error in a part of the log. |
 | Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 2026-3-29 | desktop, demo | x86-64 | UEFI | Crash due to unimplemented acpi function, see [jackpot51/acpi #3](https://github.com/jackpot51/acpi/pull/3) on GitHub |
 | Dell | Latitude D600 | 0.9.0 | 2026-01-25 | desktop | i586 | BIOS | Some kernel messages displayed, then locks up |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
