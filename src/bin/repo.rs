@@ -3,11 +3,11 @@ use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{create_dir, create_target_dir, remove_all, run_command};
-use cookbook::cook::ident;
 use cookbook::cook::package::{package, package_handle_push};
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
+use cookbook::cook::{fetch_repo, ident};
 use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
 use cookbook::{Error, Result, staged_pkg};
 use pkg::{PackageName, PackageState};
@@ -678,6 +678,23 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             CookRecipe::from_list(recipe_names.clone())?
         }
     };
+
+    if command.is_building() && recipes.iter().any(|r| r.rule == "binary") {
+        let (_, repository) = fetch_repo::get_binary_repo();
+        for recipe in recipes.iter_mut() {
+            if recipe.rule == "binary" && !repository.packages.contains_key(recipe.name.as_str()) {
+                if config.cook.verbose && !(config.cook.tui && command == CliCommand::Cook) {
+                    // TODO: this should be printed at fetch log, not here
+                    println!(
+                        "DEBUG: Recipe {:?} has no binary package",
+                        recipe.name.as_str()
+                    );
+                }
+                recipe.rule = "source".into();
+                recipe.reload_recipe()?;
+            }
+        }
+    }
 
     if !config.with_package_deps || command.is_informational() {
         // In CliCommand::Cook, is_deps==true will make it skip checking source
