@@ -35,13 +35,13 @@ We also recommend to add your `pciutils` log as a comment on [this](https://gitl
 
 - **Recommended:** The operating system boots with video, sound, PS/2 or USB input, Ethernet, terminal and Orbital working.
 - **Booting:** The operating system boots with some issues or lacking hardware support (write the issues and what supported hardware is not working in the "Report" section).
-- **Broken:** The boot loader don't work or can't bootstrap the operating system.
+- **Broken:** The boot loader doesn't work or can't bootstrap the operating system.
 
 ## General
 
 This section contain limitations that apply to any status.
 
-- ACPI support is incomplete (some things are hardcoded on the kernel to work)
+- ACPI support is incomplete (some things are hardcoded in the kernel to work)
 - Wi-Fi and Bluetooth aren't supported yet
 - AMD, NVIDIA, ARM, and PowerVR GPUs aren't supported yet (only BIOS VESA and UEFI GOP)
 - I2C devices aren't supported yet (PS/2 or USB devices should be used)
@@ -98,6 +98,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital, NVMe driver livelocks |
 | HP | Dev One | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
 | HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
+| Lenovo | Thinkbook 14 Gen 2 ARE (AMD Ryzen Edition) Laptop | 0.9.0 | 2026-05-02 | desktop | x86-64 | UEFI | Boots to Orbital, but trackpad and USB mouse doesn't work so unable to test further |
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 2024-09-07 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 2024-11-09 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
@@ -110,9 +111,12 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 
 | **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
+| Apple | Mac Mini (Late 2012, Quad Core) | 0.9.0 | 2026-05-02 | desktop | x86-64 | EFI | Hangs after selecting boot device from boot menu, EFI 1.1 incompatibility? |
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
+| Asrock (Custom) | X570 Phantom Gaming 4 (Ryzen 3600) | 2026-05-02 | desktop | x86-64 | UEFI | Not recognised as a UEFI boot disk, have to boot in CSM mode. Bootloader fails with a panic |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 2026-3-29 | desktop, demo | x86-64 | UEFI | Crash due to unimplemented acpi function, see [jackpot51/acpi #3](https://github.com/jackpot51/acpi/pull/3) on GitHub |
+| Dell | Latitude D600 | 0.9.0 | 2026-01-25 | desktop | i586 | BIOS | Some kernel messages displayed, then locks up |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
 | HP | EliteBook 2570p | 0.8.0 | 2022-11-23 | demo | x86-64 | BIOS (CSM mode?) | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution |
 | Lenovo | G570 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue) |
@@ -120,5 +124,5 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | Lenovo | ThinkCentre M83 | 0.9.0 | 2025-11-09 | desktop | x86_64 | UEFI | Presents user with a set of display resolution options. After user selects an option, it takes a long time for the "live" thing to load all the way to 647MiB. Once it does reach 647MiB, however, it dumps a bunch of logs onto the screen. Those logs also happen to be offset so that the leftmost portion of all text "exists" past the leftmost part of the screen, resulting in the logs being only partially visible. The logs appear to include (among other things) 1. "thread 'main' (1) panicked at acpid/src/acpi.rs:256:68: Called `Result::unwrap()` on an `Err` value: Aml(NoCurrentOp)"; 2. "thread 'main' (1) panicked at acpid/src/main.rs:147:39:acpid: failed to daemonize: Error `I/O error` 5"; 3. "... [@hwd:40 ERROR] failed to probe with error No such device (os error 19)..."; etc. |
 | Panasonic | Toughbook CF-18 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Hangs after PIT initialization |
 | Toshiba | Satellite L500 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
+| Unbranded | VIA C3 CPU | 0.9.0 | 2026-01-25 | desktop | i586 | BIOS | Some kernel messages displayed, then locks up |
 | XMG (Schenker) | Apex 17 (M21) | 0.9.0 | 2024-09-30 | demo, server | x86-64 | UEFI | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts |
-
