@@ -265,7 +265,7 @@ bc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) change-rule --set-rule=binary $(foreach f,$(subst $(comma), ,$*),$(f))
+	$(REPO_BIN) change-rule --set-rule=binary $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
 # Set recipe rule to "source" then invoke clean
@@ -273,7 +273,7 @@ sc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) change-rule --set-rule=source $(foreach f,$(subst $(comma), ,$*),$(f))
+	$(REPO_BIN) change-rule --set-rule=source $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
 # Reset recipe rule then invoke clean
@@ -281,18 +281,18 @@ cc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	$(REPO_BIN) change-rule --set-rule= $(foreach f,$(subst $(comma), ,$*),$(f))
+	$(REPO_BIN) change-rule --set-rule= $(foreach f,$(subst $(comma), ,$*),$(f)) --with-package-deps
 endif
 
 # Set recipe rule to "binary" then invoke clean and rebuild
 bcr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) bc.$*
-	$(MAKE) r.$*
+	$(MAKE) r.$*,--with-package-deps
 
 # Set recipe rule to "source" then invoke clean and rebuild
 scr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) sc.$*
-	$(MAKE) r.$*
+	$(MAKE) r.$*,--with-package-deps
 
 export DEBUG_BIN?=
 
