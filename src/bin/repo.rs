@@ -8,7 +8,9 @@ use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty, write_to_p
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{self, WalkTreeEntry};
 use cookbook::cook::{fetch_repo, ident};
-use cookbook::recipe::{CookRecipe, recipes_flatten_package_names, recipes_mark_as_deps};
+use cookbook::recipe::{
+    CookRecipe, SourceRecipe, recipes_flatten_package_names, recipes_mark_as_deps,
+};
 use cookbook::{Error, Result, staged_pkg};
 use pkg::{PackageName, PackageState};
 use ratatui::Terminal;
@@ -678,6 +680,31 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
             CookRecipe::from_list(recipe_names.clone())?
         }
     };
+
+    if !get_config().recipe_lock.is_empty() {
+        let lock = &get_config().recipe_lock;
+        for recipe in recipes.iter_mut() {
+            if let Some(lock_recipe) = lock.get(recipe.name.as_str()) {
+                if let Some(rule) = &lock_recipe.fsrule {
+                    recipe.rule = rule.into();
+                    recipe.reload_recipe()?;
+                }
+                if let Some(gitrev) = &lock_recipe.gitrev {
+                    if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
+                        *rev = Some(gitrev.clone());
+                        *branch = None;
+                    } else {
+                        println!(
+                            "DEBUG: Recipe {:?} contains into git rev but recipe source is not git",
+                            recipe.name.as_str()
+                        );
+                    }
+                    recipe.rule = "source".into();
+                    recipe.reload_recipe()?;
+                }
+            }
+        }
+    }
 
     if command.is_building() && recipes.iter().any(|r| r.rule == "binary") {
         let (_, repository) = fetch_repo::get_binary_repo();
