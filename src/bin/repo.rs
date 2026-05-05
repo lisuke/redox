@@ -1,5 +1,5 @@
 use ansi_to_tui::IntoText;
-use cookbook::config::{CookConfig, get_config, init_config};
+use cookbook::config::{CookConfig, CookLockOpt, get_config, init_config};
 use cookbook::cook::cook_build::{build, get_stage_dirs, remove_stage_dir};
 use cookbook::cook::fetch::{FetchResult, fetch, fetch_offline};
 use cookbook::cook::fs::{create_dir, create_target_dir, remove_all, run_command};
@@ -52,7 +52,9 @@ const REPO_HELP_STR: &str = r#"
         find         find path of recipe packages
         cook-tree    show tree of recipe build
         push-tree    show tree of recipe packages
-    
+        capture-rev  write lock to git recipes
+        change-rule  override rule to recipes
+
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
         --repo=<repo_dir>          the "repo" folder, default to $PWD/repo
@@ -63,6 +65,8 @@ const REPO_HELP_STR: &str = r#"
         --category=<category>      apply to all recipes in <cookbook_dir>/<category>
         --filesystem=<filesystem>  override recipes config using installer file
         --repo-binary              override recipes config to use repo_binary
+        --set-rule=<rule>          used in "change-rule", set wanted config rule
+        --rollback=<rev>           used in "capture-rev", rollback to a commit instead
 
     cook env and their defaults:
         CI=                          set to any value to disable TUI
@@ -87,6 +91,8 @@ struct CliConfig {
     logs_dir: Option<PathBuf>,
     category: Option<PathBuf>,
     filesystem: Option<redox_installer::Config>,
+    rollback: Option<String>,
+    set_rule: Option<String>,
     with_package_deps: bool,
     all: bool,
     cook: CookConfig,
@@ -103,6 +109,8 @@ enum CliCommand {
     Push,
     PushTree,
     Find,
+    CaptureRev,
+    ChangeRule,
 }
 
 impl CliCommand {
@@ -110,7 +118,11 @@ impl CliCommand {
         *self == CliCommand::PushTree || *self == CliCommand::CookTree || *self == CliCommand::Find
     }
     pub fn is_building(&self) -> bool {
-        *self == CliCommand::Fetch || *self == CliCommand::Cook || *self == CliCommand::CookTree
+        *self == CliCommand::Fetch
+            || *self == CliCommand::Cook
+            || *self == CliCommand::CookTree
+            || *self == CliCommand::CaptureRev
+            || *self == CliCommand::ChangeRule
     }
     pub fn is_pushing(&self) -> bool {
         *self == CliCommand::Push || *self == CliCommand::PushTree
@@ -136,6 +148,8 @@ impl FromStr for CliCommand {
             "push-tree" => Ok(CliCommand::PushTree),
             "cook-tree" => Ok(CliCommand::CookTree),
             "find" => Ok(CliCommand::Find),
+            "capture-rev" => Ok(CliCommand::CaptureRev),
+            "change-rule" => Ok(CliCommand::ChangeRule),
             _ => bail_options_err!("Unknown command {:?}", s),
         }
     }
@@ -153,6 +167,8 @@ impl ToString for CliCommand {
             CliCommand::PushTree => "push-tree".to_string(),
             CliCommand::CookTree => "cook-tree".to_string(),
             CliCommand::Find => "find".to_string(),
+            CliCommand::CaptureRev => "capture-rev".to_string(),
+            CliCommand::ChangeRule => "change-rule".to_string(),
         }
     }
 }
@@ -180,6 +196,8 @@ impl CliConfig {
             cook: get_config().cook.clone(),
             all: false,
             filesystem: None,
+            rollback: None,
+            set_rule: None,
         })
     }
 }
@@ -243,6 +261,12 @@ fn main_inner() -> Result<()> {
     }
     if command == CliCommand::Push {
         return handle_push(&recipes, &config);
+    }
+    if command == CliCommand::ChangeRule {
+        return handle_change_rule(&recipes, &config);
+    }
+    if command == CliCommand::CaptureRev {
+        return handle_capture_rev(&recipes, &config);
     }
 
     let verbose = config.cook.verbose;
@@ -388,13 +412,11 @@ fn repo_inner(config: &CliConfig, command: &CliCommand, recipe: &CookRecipe) -> 
         CliCommand::Unfetch | CliCommand::Clean | CliCommand::CleanTarget => {
             handle_clean(recipe, config, command)?
         }
-        CliCommand::Push => unreachable!(),
-        CliCommand::PushTree => unreachable!(),
-        CliCommand::CookTree => unreachable!(),
         CliCommand::Find => {
             println!("{}", recipe.dir.display());
             false
         }
+        _ => unreachable!(),
     })
 }
 
@@ -431,6 +453,8 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
                     "--repo" => config.repo_dir = PathBuf::from(value),
                     "--sysroot" => config.sysroot_dir = PathBuf::from(value),
                     "--category" => config.category = Some(PathBuf::from(value)),
+                    "--set-rule" => config.set_rule = Some(value.into()),
+                    "--rollback" => config.rollback = Some(value.into()),
                     "--filesystem" => {
                         config.filesystem = Some({
                             let r = redox_installer::Config::from_file(&PathBuf::from(value));
@@ -942,6 +966,48 @@ fn handle_tree(recipes: &Vec<CookRecipe>, is_build_tree: bool, _config: &CliConf
     }
 
     Ok(())
+}
+
+fn handle_change_rule(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<()> {
+    let mut lock = get_config().recipe_lock.clone();
+    let is_pruning = config.set_rule.as_ref().is_some_and(|s| s.is_empty());
+    for recipe in recipes {
+        let mut recipe_lock = lock.get(recipe.name.as_str()).cloned().unwrap_or_default();
+        let cached = if is_pruning {
+            recipe_lock.fsrule.take().is_none()
+        } else {
+            let new_rule = config
+                .set_rule
+                .as_ref()
+                .cloned()
+                .unwrap_or_else(|| recipe.rule.clone());
+
+            let old_rule = recipe_lock.fsrule.replace(new_rule.clone());
+            old_rule == Some(new_rule)
+        };
+        if recipe_lock.is_empty() {
+            lock.remove(recipe.name.as_str());
+        } else {
+            lock.insert(recipe.name.to_string(), recipe_lock);
+        }
+        let clean_cached = if !cached {
+            handle_clean(recipe, config, &CliCommand::Clean)?
+        } else {
+            true
+        };
+
+        if cached && clean_cached {
+            print_cached(&CliCommand::ChangeRule, &recipe.name);
+        } else {
+            print_success(&CliCommand::ChangeRule, &recipe.name);
+        }
+    }
+    CookLockOpt { recipes: lock }.save();
+    Ok(())
+}
+
+fn handle_capture_rev(_recipes: &Vec<CookRecipe>, _config: &CliConfig) -> Result<()> {
+    todo!()
 }
 
 //

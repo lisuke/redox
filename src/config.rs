@@ -85,8 +85,14 @@ pub struct RecipeLock {
     pub gitrev: Option<String>,
 }
 
-const COOKBOOK_LOCK_HEADER: &str = r#"This file is generated automatically.
-All configuration here overrides anything from recipes or config directory.
+impl RecipeLock {
+    pub fn is_empty(&self) -> bool {
+        self.fsrule.is_none() && self.gitrev.is_none()
+    }
+}
+
+const COOKBOOK_LOCK_HEADER: &str = r#"# This file is generated automatically.
+# All configuration here overrides anything from recipes or config directory.
 "#;
 
 impl CookLockOpt {
