@@ -666,6 +666,10 @@ pub fn fetch_remote(
 
     for package in packages {
         let (_, source_pkgar, source_toml) = package_source_paths(package, &target_dir);
+        let (tmp_pkgar, tmp_toml) = (
+            source_pkgar.with_added_extension("tmp"),
+            source_toml.with_added_extension("tmp"),
+        );
         let source_name = get_package_name(name, package);
         let Some(repo_blake3) = repository.packages.get(&source_name) else {
             bail_other_err!("Package {source_name} does not exist in server repository")
@@ -684,22 +688,30 @@ pub fn fetch_remote(
             }
 
             if !source_toml.is_file() {
-                {
-                    let toml_file = File::create(&source_toml)
-                        .map_err(wrap_io_err!(source_toml, "Creating file"))?;
+                let pkg_toml = {
+                    if tmp_toml.is_file() {
+                        remove_all(&tmp_toml)?;
+                    }
+                    let toml_file =
+                        File::create(&tmp_toml).map_err(wrap_io_err!(tmp_toml, "Creating file"))?;
                     let mut writer = DownloadBackendWriter::ToFile(toml_file);
                     manager.download(&format!("{}.toml", &source_name), None, &mut writer)?;
+                    read_source_toml(&tmp_toml)?
+                };
+
+                if tmp_pkgar.is_file() {
+                    remove_all(&tmp_pkgar)?;
                 }
-                let pkg_toml = read_source_toml(&source_toml)?;
-                let pkgar_file = File::create(&source_pkgar)
-                    .map_err(wrap_io_err!(source_pkgar, "Creating file"))?;
+                let pkgar_file =
+                    File::create(&tmp_pkgar).map_err(wrap_io_err!(tmp_pkgar, "Creating file"))?;
                 let mut writer = DownloadBackendWriter::ToFile(pkgar_file);
                 manager.download(
                     &format!("{}.pkgar", &source_name),
                     Some(pkg_toml.network_size),
                     &mut writer,
                 )?;
-
+                rename(&tmp_pkgar, &source_pkgar)?;
+                rename(&tmp_toml, &source_toml)?;
                 cached = false;
             }
 
