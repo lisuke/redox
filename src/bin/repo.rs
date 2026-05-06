@@ -565,6 +565,8 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
         return Ok((config, command, recipes));
     }
 
+    let lock = &get_config().recipe_lock;
+
     let mut recipes = if let Some(conf) = config.filesystem.as_ref() {
         let repo_binary = override_filesystem_repo_binary;
 
@@ -574,16 +576,31 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
         let mut binary_names: Vec<PackageName> = Vec::new();
         let mut special_rules: HashMap<PackageName, String> = HashMap::new();
         let default_rule = if repo_binary { "binary" } else { "source" };
+
+        for (recipe_name, recipe_lock) in lock.iter().filter(|(_, v)| v.fsrule.is_some()) {
+            let Ok(recipe_name) = PackageName::new(recipe_name) else {
+                continue;
+            };
+            let rule = recipe_lock.fsrule.as_ref().unwrap();
+            special_rules.insert(recipe_name.clone(), rule.to_string());
+            if rule == "source" || rule == "local" {
+                source_names.push(recipe_name);
+            } else if rule == "binary" {
+                binary_names.push(recipe_name);
+            }
+        }
         for (recipe_name_str, recipe_config) in conf.packages.iter() {
             let Ok(recipe_name) = PackageName::new(recipe_name_str) else {
                 continue;
             };
-            let rule = match recipe_config {
-                PackageConfig::Build(rule) => {
-                    special_rules.insert(recipe_name.clone(), rule.to_string());
-                    rule
-                }
-                _ => default_rule,
+            if special_rules.contains_key(&recipe_name) {
+                continue;
+            }
+            let rule = if let PackageConfig::Build(rule) = recipe_config {
+                special_rules.insert(recipe_name.clone(), rule.to_string());
+                rule
+            } else {
+                default_rule
             };
 
             if rule == "source" || rule == "local" {
@@ -706,25 +723,20 @@ fn parse_args(args: Vec<String>) -> Result<(CliConfig, CliCommand, Vec<CookRecip
     };
 
     if !get_config().recipe_lock.is_empty() {
-        let lock = &get_config().recipe_lock;
         for recipe in recipes.iter_mut() {
-            if let Some(lock_recipe) = lock.get(recipe.name.as_str()) {
-                if let Some(rule) = &lock_recipe.fsrule {
-                    recipe.rule = rule.into();
-                    recipe.reload_recipe()?;
-                }
-                if let Some(gitrev) = &lock_recipe.gitrev {
-                    if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
-                        *rev = Some(gitrev.clone());
-                        *branch = None;
-                    } else {
-                        println!(
-                            "DEBUG: Recipe {:?} contains into git rev but recipe source is not git",
-                            recipe.name.as_str()
-                        );
-                    }
-                    recipe.rule = "source".into();
-                    recipe.reload_recipe()?;
+            if let Some(gitrev) = lock
+                .get(recipe.name.as_str())
+                .map(|r| r.gitrev.clone())
+                .flatten()
+            {
+                if let Some(SourceRecipe::Git { rev, branch, .. }) = &mut recipe.recipe.source {
+                    *rev = Some(gitrev);
+                    *branch = None;
+                } else {
+                    println!(
+                        "DEBUG: Recipe {:?} contains into git rev but recipe source is not git",
+                        recipe.name.as_str()
+                    );
                 }
             }
         }
@@ -972,7 +984,12 @@ fn handle_change_rule(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<(
     let mut lock = get_config().recipe_lock.clone();
     let is_pruning = config.set_rule.as_ref().is_some_and(|s| s.is_empty());
     for recipe in recipes {
-        let mut recipe_lock = lock.get(recipe.name.as_str()).cloned().unwrap_or_default();
+        if recipe.name.is_host() {
+            // host packages will always be "source" so it's pointless to change their rule
+            continue;
+        }
+        let recipe_name = recipe.name.without_prefix();
+        let mut recipe_lock = lock.get(recipe_name).cloned().unwrap_or_default();
         let cached = if is_pruning {
             recipe_lock.fsrule.take().is_none()
         } else {
@@ -986,9 +1003,9 @@ fn handle_change_rule(recipes: &Vec<CookRecipe>, config: &CliConfig) -> Result<(
             old_rule == Some(new_rule)
         };
         if recipe_lock.is_empty() {
-            lock.remove(recipe.name.as_str());
+            lock.remove(recipe_name);
         } else {
-            lock.insert(recipe.name.to_string(), recipe_lock);
+            lock.insert(recipe_name.to_string(), recipe_lock);
         }
         let clean_cached = if !cached {
             handle_clean(recipe, config, &CliCommand::Clean)?
