@@ -1,8 +1,13 @@
-use std::{collections::HashMap, env, fs, str::FromStr, sync::OnceLock};
+use std::{
+    collections::{BTreeMap, HashMap},
+    env, fs,
+    str::FromStr,
+    sync::OnceLock,
+};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct CookConfigOpt {
     /// whether to run offline
@@ -34,7 +39,7 @@ pub struct CookConfigOpt {
     pub write_filetree: Option<bool>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct CookConfig {
     pub offline: bool,
     pub jobs: usize,
@@ -67,7 +72,37 @@ impl From<CookConfigOpt> for CookConfig {
     }
 }
 
-#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
+pub struct CookLockOpt {
+    pub recipes: BTreeMap<String, RecipeLock>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
+pub struct RecipeLock {
+    pub fsrule: Option<String>,
+    pub gitrev: Option<String>,
+}
+
+impl RecipeLock {
+    pub fn is_empty(&self) -> bool {
+        self.fsrule.is_none() && self.gitrev.is_none()
+    }
+}
+
+const COOKBOOK_LOCK_HEADER: &str = r#"# This file is generated automatically.
+# All configuration here overrides anything from recipes or config directory.
+"#;
+
+impl CookLockOpt {
+    pub fn save(&self) {
+        let str = toml::to_string(&self).unwrap();
+        fs::write("cookbook.lock", format!("{COOKBOOK_LOCK_HEADER}\n{str}")).unwrap();
+    }
+}
+
+#[derive(Debug, Default, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct CookbookConfig {
     #[serde(rename = "cook")]
@@ -75,6 +110,7 @@ pub struct CookbookConfig {
     #[serde(skip)]
     pub cook: CookConfig,
     pub mirrors: HashMap<String, String>,
+    pub recipe_lock: BTreeMap<String, RecipeLock>,
 }
 
 static CONFIG: OnceLock<CookbookConfig> = OnceLock::new();
@@ -144,6 +180,19 @@ pub fn init_config() {
     }
 
     config.cook = CookConfig::from(config.cook_opt.clone());
+
+    let lock: CookLockOpt = if fs::exists("cookbook.lock").unwrap_or(false) {
+        let toml_content = fs::read_to_string("cookbook.lock")
+            .map_err(|e| format!("Unable to read lock: {:?}", e))
+            .unwrap();
+        toml::from_str(&toml_content)
+            .map_err(|e| format!("Unable to parse lock (plz delete manually): {:?}", e))
+            .unwrap()
+    } else {
+        CookLockOpt::default()
+    };
+
+    config.recipe_lock = lock.recipes;
 
     CONFIG.set(config).expect("config is initialized twice");
 }
