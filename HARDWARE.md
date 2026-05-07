@@ -96,6 +96,7 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | ASUS | Vivobook 15 OLED (M1503Q) | 0.9.0 | 2025-08-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb do not work, cannot connect to the internet, right maximum display resolution 2880x1620 |
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Boots to Orbital, NVMe driver livelocks |
 | Dell | XPS 13 (9350) | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital, NVMe driver livelocks |
+| Dell | XPS L502X | 0.9.0 | 2026-05-01 | desktop | x86-64 | BIOS | Does not find the bootloader without patching the partition type byte to FAT32 (LBA), Boots to orbital with the patch in live mode, The entire system freezes after the orblogin screen appears unless recompiling the kernel without ACPI support, almost everything works out of box when using the kernel without ACPI, except the touchpad scrolling, WiFi and Intel graphics |
 | HP | Dev One | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
 | HP | EliteBook Folio 9480M | 0.9.0 | 2025-11-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
 | Lenovo | Thinkbook 14 Gen 2 ARE (AMD Ryzen Edition) Laptop | 0.9.0 | 2026-05-02 | desktop | x86-64 | UEFI | Boots to Orbital, but trackpad and USB mouse doesn't work so unable to test further |
@@ -116,7 +117,6 @@ Each "Vendor" has its own alphabetical order in "Model", independent from models
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | Asrock (Custom) | X570 Phantom Gaming 4 (Ryzen 3600) | 2026-05-02 | desktop | x86-64 | UEFI | Not recognised as a UEFI boot disk, have to boot in CSM mode. Bootloader fails with a panic |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
-| Dell | XPS L502X | 0.9.0 | 2026-04-16 | desktop | x86-64 | BIOS | Does not find the bootloader without patching the partition type byte to FAT32 (LBA), after the live kernel loads, the kernel panics and dumps an unreadable long trace, referencing an invalid opcode CPU error in a part of the log. |
 | Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 2026-3-29 | desktop, demo | x86-64 | UEFI | Crash due to unimplemented acpi function, see [jackpot51/acpi #3](https://github.com/jackpot51/acpi/pull/3) on GitHub |
 | Dell | Latitude D600 | 0.9.0 | 2026-01-25 | desktop | i586 | BIOS | Some kernel messages displayed, then locks up |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
