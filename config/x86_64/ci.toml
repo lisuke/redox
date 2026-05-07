@@ -14,6 +14,7 @@ prompt = false
 # Meta-packages below
 
 auto-test = {}
+autotools = {}
 dev-essential = {}
 dev-redox = {}
 llvm21-common = {}
