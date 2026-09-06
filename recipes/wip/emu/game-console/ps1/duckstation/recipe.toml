@@ -1,9 +1,10 @@
+# using DuckStation fork from when it was licensed as GPLv3 and the fork still had the Qt and ImGui? frontends (libretro fork don't have them anymore)
 #TODO not compiled or tested yet
 #TODO determine minimum dependencies from cmake log
-# build instructions: https://github.com/stenzek/duckstation#linux-1
+# build instructions: https://github.com/piepacker/swanstation#linux-1
 [source]
-git = "https://github.com/stenzek/duckstation"
-rev = "16e56d7824e15657be26e30030394d0668493635"
+git = "https://github.com/piepacker/swanstation"
+rev = "096c810"
 shallow_clone = true
 [build]
 template = "cmake"

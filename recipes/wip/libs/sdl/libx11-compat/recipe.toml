@@ -14,7 +14,8 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 DYNAMIC_INIT
 MAKEFLAGS=(
     SDL_BACKEND=sdl2
+    XCB=1
 )
-"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}" \
-"${COOKBOOK_MAKE}" install examples DESTDIR="${COOKBOOK_STAGE}/usr"
+"${COOKBOOK_MAKE}" all examples -j "${COOKBOOK_MAKE_JOBS}" "${MAKEFLAGS[@]}" \
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}/usr"
 """

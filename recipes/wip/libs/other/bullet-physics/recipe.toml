@@ -9,4 +9,5 @@ template = "cmake"
 cmakeflags = [
     "-DBUILD_UNIT_TESTS=OFF",
     "-DBUILD_EXTRAS=OFF",
+    "-DBUILD_OPENGL3_DEMOS=ON",
 ]
